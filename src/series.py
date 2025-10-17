@@ -1,4 +1,5 @@
 import numpy as np
+from collections.abc import Mapping
 
 
 class Series():
@@ -11,10 +12,31 @@ class Series():
 
     def __init__(self, data=None, index=None, dtype=None,
                  name=None, copy=None):
-        if type(data) is type(dict()):
-            # Lets store the keys and values seperately
-            self.index_labels = list(data.keys())
-            self.data_array = np.array(list(data.values()))
+        # If data argument is a dictionary
+        if isinstance(data, Mapping):
+            keys = list(data.keys())
+            values = list(data.values())
+            print("hello")
+
+            # Respect selected dtype
+            if dtype:
+                arr = np.asarray(values, dtype=dtype)
+
+            if copy:
+                arr = arr.copy()
+
+            self.data_array = arr
+
+            if index is not None:
+                # We need to make sure the lengths match
+                if len(index) != len(keys):
+                    raise ValueError(
+                        "Length of index does not match length of data"
+                        )
+                self.index_labels = index
+            else:
+                self.index_labels = keys
+        return
 
 
 if __name__ == "__main__":
