@@ -1,5 +1,6 @@
-import numpy as np
+from utils.type_check import safe_type_cast
 from collections.abc import Mapping
+import pandas as pd
 
 
 class Series():
@@ -12,32 +13,45 @@ class Series():
 
     def __init__(self, data=None, index=None, dtype=None,
                  name=None, copy=None):
-        # If data argument is a dictionary
-        if isinstance(data, Mapping):
+        if data is None:
+            keys = []
+            values = []
+        # If data argument is a Mapping
+        elif isinstance(data, Mapping):
             keys = list(data.keys())
             values = list(data.values())
-            print("hello")
+        # Iterable list like type
+        else:
+            values = list(data)
 
-            # Respect selected dtype
-            if dtype:
-                arr = np.asarray(values, dtype=dtype)
+        # Decide type and store ndarray
+        arr = safe_type_cast(values, dtype=dtype)
 
-            if copy:
-                arr = arr.copy()
+        # Copy only if specified
+        if copy:
+            arr = arr.copy()
 
-            self.data_array = arr
+        # Store array and dtype
+        self.data_array = arr
+        self.dtype = arr.dtype
 
-            if index is not None:
-                # We need to make sure the lengths match
-                if len(index) != len(keys):
-                    raise ValueError(
-                        "Length of index does not match length of data"
-                        )
-                self.index_labels = index
-            else:
-                self.index_labels = keys
+        # If index specified
+        if index is not None:
+            # We need to make sure the lengths match
+            if len(index) != len(keys):
+                raise ValueError(
+                    "Length of index does not match length of data"
+                    )
+            self.index_labels = index
+        else:
+            self.index_labels = keys
         return
 
 
 if __name__ == "__main__":
-    tmp1 = Series()
+    tmp = Series({'test': 5})
+    tmp2 = pd.Series({'test': 5})
+    print(tmp.data_array)
+    print(tmp.index_labels)
+    print(tmp.dtype)
+    print(tmp2.dtype)
