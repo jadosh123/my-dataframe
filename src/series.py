@@ -40,6 +40,4 @@ class Series():
 
 
 if __name__ == "__main__":
-    test = int(56.3)
-    print(type(test))
-    print(test)
+    tmp1 = Series()

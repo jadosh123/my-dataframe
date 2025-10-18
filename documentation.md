@@ -12,3 +12,10 @@ For a high performance DataFrame my idea is a dictionary of columns where the ke
 
 The current idea for the flow is to take the data argument in the series constructor, pass it through a type checker method that I'm building and hopefully be able to convert the elements to a single uniform datatype, otherwise return a generic object datatype if complex types are present like lists or dicts.
 The way to determine the datatype to use for the series to my understanding depends on the type hierarchy where we try to find the most general and safest datatype to convert the data to so that we have minimal data loss.
+
+For the typing hierarchy it seems that pandas uses this setup:
+**bool -> int -> float -> complex -> object.**
+
+this is why when a pandas series contains a string or a list or any mapping the dtype resolves to object.
+Numpy's ndarray doesn't allow multiple types unless we specify dtype=object on initialization which allows us to store multiple types in it since everything in python is an object.
+However when using object as dtype we cant use numpy's vectorized operations.
