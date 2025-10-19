@@ -21,3 +21,7 @@ Numpy's ndarray doesn't allow multiple types unless we specify dtype=object on i
 However when using object as dtype we cant use numpy's vectorized operations.
 
 Now while implementing the dunder repr method in my Series class I thought the padding that pandas added was based on the line with the max length but it seems that it calculates it based on the longest value and longest label regardless of wether they are on the same line or not and adds between them 4 white spaces.
+
+I first went with the concatenation method inside a loop but its terrible in terms of performance since each time python has to concatenate a new string it needs to first allocate memory to hold the new size string and copy the contents into it each concatenation, but if we choose to store the different strings in a list and then do a join operation on the strings with an empty string the time complexity is M since python calculates the amount of memory needed for housing all the strings and allocates it one time.
+
+I found that for a series of length > 60 pandas truncates the data in the repr method and only displays first and last 5 elements with two dots between.
