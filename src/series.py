@@ -59,13 +59,14 @@ class Series():
         max_lbl_len = 0
         max_val_len = 0
 
+        # Check if below truncation threshold
         if len(self.index) <= MAX_DISPLAY_VAL:
             lbls = self.index
             vals = self.values
         else:
             # Grab first and last 5 elements from labels and values
-            lbls = [*self.index[:5], *self.index[-5:]]
-            vals = [*self.values[:5], *self.values[-5:]]
+            lbls = [*self.index[:5], max_lbl_len*" ", *self.index[-5:]]
+            vals = [*self.values[:5], "...", *self.values[-5:]]
 
         for lbl, val in zip(lbls, vals):
             if len(f"{lbl}") > max_lbl_len:
@@ -82,20 +83,20 @@ class Series():
                    (max_length - len(f"{lbl}{val}"))*" " +
                    f"{val}\n"
                    for lbl, val in zip(lbls, vals)]
+            res.append(f"dtype: {self.dtype}")
         else:
             # Construct the resulting string
             res = [f"{lbl}" +
                    (max_length - len(f"{lbl}{val}"))*" " +
                    f"{val}\n"
                    for lbl, val in zip(lbls, vals)]
+            res.append(f"Length: {len(lbls)}, dtype: {self.dtype}")
 
-        res.append(f"Length: {len(self.values)}, dtype: {self.dtype}")
         return "".join(res)
 
 
 if __name__ == "__main__":
-    temp = [i for i in range(61)]
-    temp[30] = 50000000
+    temp = {f"hello{i}": i for i in range(100)}
     temp1 = pd.Series(temp)
     temp2 = Series(temp)
     print(temp1)
