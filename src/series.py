@@ -42,16 +42,40 @@ class Series():
                 raise ValueError(
                     "Length of index does not match length of data"
                     )
-            self.index_labels = index
+            self.index = safe_type_cast(index)
+        elif keys is not None:
+            self.index = safe_type_cast(keys)
         else:
-            self.index_labels = keys
+            # Generate indices from 0 to length-1
+            indices = [i for i in range(len(self.data_array))]
+            self.index = safe_type_cast(indices)
         return
+
+    def __repr__(self):
+        # Determine the longest label and value to print to calculate padding
+        max_lbl_len = 0
+        max_val_len = 0
+        for lbl, val in zip(self.index, self.data_array):
+            if len(f"{lbl}") > max_lbl_len:
+                max_lbl_len = len(f"{lbl}")
+            if len(f"{val}") > max_val_len:
+                max_val_len = len(f"{val}")
+
+        # Store max length +4 for white space
+        max_length = max_lbl_len + max_val_len + 4
+        res = ""
+
+        # Add enough padding for uniform display of data
+        for lbl, val in zip(self.index, self.data_array):
+            padding_to_add = max_length - len(f"{lbl}{val}")
+            res += f"{lbl}" + padding_to_add*" " + f"{val}\n"
+        res += f"dtype: {self.dtype}"
+        return res
 
 
 if __name__ == "__main__":
-    tmp = Series({'test': 5})
-    tmp2 = pd.Series({'test': 5})
-    print(tmp.data_array)
-    print(tmp.index_labels)
-    print(tmp.dtype)
-    print(tmp2.dtype)
+    tmp = Series({(4, 5): 500, 4: 50000000000, 9.0: 'hi'})
+    tmp2 = pd.Series({(4, 5): 50, 4: 50000000000, 9.0: 'hi'})
+    # tmp3 = pd.Series([1, 2, 3, 4, 10])
+    print(tmp2)
+    print(tmp)

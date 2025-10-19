@@ -19,3 +19,5 @@ For the typing hierarchy it seems that pandas uses this setup:
 this is why when a pandas series contains a string or a list or any mapping the dtype resolves to object.
 Numpy's ndarray doesn't allow multiple types unless we specify dtype=object on initialization which allows us to store multiple types in it since everything in python is an object.
 However when using object as dtype we cant use numpy's vectorized operations.
+
+Now while implementing the dunder repr method in my Series class I thought the padding that pandas added was based on the line with the max length but it seems that it calculates it based on the longest value and longest label regardless of wether they are on the same line or not and adds between them 4 white spaces.
