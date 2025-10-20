@@ -28,10 +28,6 @@ class Series():
             values = list(data)
             keys = [i for i in range(len(values))]
 
-        # Store private mapping for fast lookups
-        # TODO before anything read about decarotors/usage and implementation
-        # self._
-
         # Decide type and store ndarray
         arr = safe_type_cast(values, dtype=dtype)
 
@@ -57,6 +53,12 @@ class Series():
             # Generate indices from 0 to length-1
             indices = [i for i in range(len(self.values))]
             self.index = safe_type_cast(indices)
+
+        # Store indices with labels in a dictionary for O(1) access
+        self._lbl_dict = {lbl: i for lbl, i in zip(
+            self.index, range(len(self.index))
+        )}
+
         return
 
     def __repr__(self):
@@ -106,11 +108,15 @@ class Series():
         if isinstance(key, slice):
             cls = type(self)
             return cls(self.values[key], self.index[key])
-        # elif isinstance(ind, str):
-
+        elif isinstance(key, str):
+            # Here we need to get the index of the label and
+            # fetch the value at that index
+            ind = self._lbl_dict.get(key)
         # If not slice return the specific value
-        index = operator.index(key)
-        return self.values[index]
+        else:
+            ind = operator.index(key)
+
+        return self.values[ind]
 
 
 if __name__ == "__main__":
@@ -118,5 +124,9 @@ if __name__ == "__main__":
     # temp1 = pd.Series(temp)
     # temp2 = Series(temp)
     # temp1['hello1'] = 440000
-    tempo = Series(data=[1, 2, 3, 4], index=['Hello', '2', '3', '4'])
-    print(tempo[:2])
+    tmp_dict = {f"hello{i}": i for i in range(10)}
+    temp = {lbl: i for lbl, i in zip(
+        tmp_dict, range(len(tmp_dict))
+    )}
+    temp1 = Series(temp)
+    print(temp1[5])
