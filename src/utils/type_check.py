@@ -15,17 +15,20 @@ def type_checker(data: list[Any]) -> DTypeLike:
     for element in data:
         data_types.add(type(element))
 
+    # TODO possibly store all types to check in array beforehand and check
+    # if any of the values in them are in data_types
+
     # Check wether we have any collection or string type
     if any((issubclass(t, Collection)) or
            (t is str) for t in data_types):
         return np.object_
-    elif float in data_types:
+    elif float or np.float64 in data_types:
         # If bool and float exist then object is best
-        if bool in data_types:
+        if bool or np.bool in data_types:
             return np.object_
         else:
             return np.float64
-    elif int in data_types:
+    elif int or np.int64 in data_types:
         return np.int64
     else:
         return np.bool

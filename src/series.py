@@ -1,6 +1,7 @@
 from utils.type_check import safe_type_cast
 from collections.abc import Mapping
 import pandas as pd
+import operator
 
 MAX_DISPLAY_VAL = 60
 
@@ -26,6 +27,10 @@ class Series():
         else:
             values = list(data)
             keys = [i for i in range(len(values))]
+
+        # Store private mapping for fast lookups
+        # TODO before anything read about decarotors/usage and implementation
+        # self._
 
         # Decide type and store ndarray
         arr = safe_type_cast(values, dtype=dtype)
@@ -61,43 +66,57 @@ class Series():
 
         # Check if below truncation threshold
         if len(self.index) <= MAX_DISPLAY_VAL:
-            lbls = self.index
-            vals = self.values
+            lbls = [str(lbl) for lbl in self.index]
+            vals = [str(val) for val in self.values]
         else:
             # Grab first and last 5 elements from labels and values
-            lbls = [*self.index[:5], max_lbl_len*" ", *self.index[-5:]]
-            vals = [*self.values[:5], "...", *self.values[-5:]]
+            lbls = [*[str(lbl) for lbl in self.index[:5]],
+                    "  ",
+                    *[str(lbl) for lbl in self.index[-5:]]]
 
-        for lbl, val in zip(lbls, vals):
-            if len(f"{lbl}") > max_lbl_len:
-                max_lbl_len = len(f"{lbl}")
-            if len(f"{val}") > max_val_len:
-                max_val_len = len(f"{val}")
+            vals = [*[str(val) for val in self.values[:5]],
+                    "...",
+                    *[str(val) for val in self.values[-5:]]]
+
+        # Calculate the longest values for padding
+        max_lbl_len = max(len(lbl) for lbl in lbls)
+        max_val_len = max(len(val) for val in vals)
 
         # Store max length +4 for white space
         max_length = max_lbl_len + max_val_len + 4
 
-        # Add enough padding for uniform display of data
-        if len(lbls) <= MAX_DISPLAY_VAL:
-            res = [f"{lbl}" +
-                   (max_length - len(f"{lbl}{val}"))*" " +
-                   f"{val}\n"
-                   for lbl, val in zip(lbls, vals)]
+        # Construct the result
+        res = [f"{lbl}" +
+               (max_length - len(f"{lbl}{val}"))*" " +
+               f"{val}\n"
+               for lbl, val in zip(lbls, vals)]
+
+        # Check if to include length for truncated output
+        if len(self.index) <= MAX_DISPLAY_VAL:
             res.append(f"dtype: {self.dtype}")
         else:
-            # Construct the resulting string
-            res = [f"{lbl}" +
-                   (max_length - len(f"{lbl}{val}"))*" " +
-                   f"{val}\n"
-                   for lbl, val in zip(lbls, vals)]
-            res.append(f"Length: {len(lbls)}, dtype: {self.dtype}")
+            res.append(f"Length: {len(self.index)}, dtype: {self.dtype}")
 
         return "".join(res)
 
+    def __len__(self):
+        return len(self.values)
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            cls = type(self)
+            return cls(self.values[key], self.index[key])
+        # elif isinstance(ind, str):
+
+        # If not slice return the specific value
+        index = operator.index(key)
+        return self.values[index]
+
 
 if __name__ == "__main__":
-    temp = {f"hello{i}": i for i in range(100)}
-    temp1 = pd.Series(temp)
-    temp2 = Series(temp)
-    print(temp1)
-    print(temp2)
+    # temp = {f"hello{i}": i for i in range(100)}
+    # temp1 = pd.Series(temp)
+    # temp2 = Series(temp)
+    # temp1['hello1'] = 440000
+    tempo = Series(data=[1, 2, 3, 4], index=['Hello', '2', '3', '4'])
+    print(tempo[:2])

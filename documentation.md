@@ -25,3 +25,8 @@ Now while implementing the dunder repr method in my Series class I thought the p
 I first went with the concatenation method inside a loop but its terrible in terms of performance since each time python has to concatenate a new string it needs to first allocate memory to hold the new size string and copy the contents into it each concatenation, but if we choose to store the different strings in a list and then do a join operation on the strings with an empty string the time complexity is M since python calculates the amount of memory needed for housing all the strings and allocates it one time.
 
 I found that for a series of length > 60 pandas truncates the data in the repr method and only displays first and last 5 elements with two dots between.
+
+Currently implementing the dunder getitem method, when calling the pandas series object with one index it returns the element in the values array at that index, when calling it with a slice it returns the index value representation like in the dunder repr method for that specific slice.
+
+Pandas gives a warning for single index lookup that treating keys as positions is deprecated and in the future version, integer keys will always be treated as labels.
+This means that for single index lookup we can either iterate over the index array and store the index that matches the requested label and then return the value at that index or we can store a private dictionary using the single leading underscore for O(1) lookup.
