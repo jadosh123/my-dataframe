@@ -30,3 +30,10 @@ Currently implementing the dunder getitem method, when calling the pandas series
 
 Pandas gives a warning for single index lookup that treating keys as positions is deprecated and in the future version, integer keys will always be treated as labels.
 This means that for single index lookup we can either iterate over the index array and store the index that matches the requested label and then return the value at that index or we can store a private dictionary using the single leading underscore for O(1) lookup.
+
+Now I'v implemented slicing, indexing by integer and by label, currently adding some unittests to try to cover some cases.
+Next step will probably be implementing .iloc or .loc functionality? I need to learn decorators especially the @property decorator in order to open a function in the Series class that can handle indexing with these attributes.
+
+After looking into it I see that when we print the object returned by pd.Series().iloc it shows us this: pandas.core.indexing._iLocIndexer
+
+That means we need to implement the _iLocIndexer and the _LocIndexer as seperate classes with their own dunder getitem method and when we implement the property decorator we return a instance of that class with self as the argument.

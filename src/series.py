@@ -1,5 +1,8 @@
 from utils.type_check import safe_type_cast
 from collections.abc import Mapping
+from numpy.typing import NDArray
+import numpy as np
+from typing import Any, Self
 import pandas as pd
 import operator
 
@@ -13,6 +16,10 @@ class Series():
 
     A series is a One-dimensional ndarray with axis labels.
     """
+    values: NDArray[Any]
+    index: NDArray[Any]
+    dtype: np.dtype[Any]
+    _lbl_dict: Mapping[Any, Any]
 
     def __init__(self, data=None, index=None, dtype=None,
                  name=None, copy=None):
@@ -104,7 +111,7 @@ class Series():
     def __len__(self):
         return len(self.values)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> Self | Any:
         if isinstance(key, slice):
             cls = type(self)
             return cls(self.values[key], self.index[key])
@@ -120,13 +127,5 @@ class Series():
 
 
 if __name__ == "__main__":
-    # temp = {f"hello{i}": i for i in range(100)}
-    # temp1 = pd.Series(temp)
-    # temp2 = Series(temp)
-    # temp1['hello1'] = 440000
-    tmp_dict = {f"hello{i}": i for i in range(10)}
-    temp = {lbl: i for lbl, i in zip(
-        tmp_dict, range(len(tmp_dict))
-    )}
-    temp1 = Series(temp)
-    print(temp1[5])
+    tmp = [1, 2, 3, 4]
+    print(pd.Series(tmp).loc)

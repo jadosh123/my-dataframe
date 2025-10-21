@@ -1,8 +1,15 @@
-import pandas as pd
+# import pandas as pd
 import numpy as np
 from numpy.typing import NDArray, DTypeLike
 from typing import Any
 from collections.abc import Collection
+
+
+class Types:
+    INT_TYPES = (int, np.integer)
+    FLOAT_TYPES = (float, np.floating)
+    BOOL_TYPES = (bool, np.bool_)
+    OBJECT_TYPES = (Collection, str)
 
 
 def type_checker(data: list[Any]) -> DTypeLike:
@@ -15,23 +22,28 @@ def type_checker(data: list[Any]) -> DTypeLike:
     for element in data:
         data_types.add(type(element))
 
-    # TODO possibly store all types to check in array beforehand and check
-    # if any of the values in them are in data_types
-
     # Check wether we have any collection or string type
-    if any((issubclass(t, Collection)) or
-           (t is str) for t in data_types):
+    if any(issubclass(t, Types.OBJECT_TYPES) for t in data_types):
         return np.object_
-    elif float or np.float64 in data_types:
+    elif any(issubclass(t, Types.FLOAT_TYPES) for t in data_types):
         # If bool and float exist then object is best
-        if bool or np.bool in data_types:
+        if any(issubclass(t, Types.BOOL_TYPES) for t in data_types):
             return np.object_
         else:
             return np.float64
-    elif int or np.int64 in data_types:
+    elif any(issubclass(t, Types.BOOL_TYPES) for t in data_types):
+        return np.bool_
+    elif any(issubclass(t, Types.INT_TYPES)
+             for t in data_types):
         return np.int64
     else:
-        return np.bool
+        supported_types = (list(Types.BOOL_TYPES) +
+                           list(Types.INT_TYPES) +
+                           list(Types.FLOAT_TYPES))
+        raise TypeError("Type is not supported, the supported types are:" +
+                        ", ".join([t.__name__ for t in supported_types]) +
+                        "."
+                        )
 
 
 def safe_type_cast(data: list[Any],
@@ -44,7 +56,6 @@ def safe_type_cast(data: list[Any],
     If dtype is specified it attempts to coerce the data to
     the specified type.
     """
-
     try:
         # Try coercing the data to the specified type
         if dtype:
@@ -60,8 +71,5 @@ def safe_type_cast(data: list[Any],
 
 
 if __name__ == "__main__":
-    tmp = [1, 'hello', 3, 4.5]
-    tmp2 = pd.Series(['hello', 'test', 'hi'])
-    dtype = type_checker(tmp)
-    print(dtype)
-    print(tmp2)
+    tmp = [4, 2, 5]
+    print(type_checker(tmp))

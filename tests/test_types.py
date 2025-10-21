@@ -3,7 +3,7 @@ import pandas as pd
 
 
 class TestClass:
-    def test_int(self):
+    def test_type_int(self):
         tmp = [1, 2, 3]
         assert type_checker(tmp) == pd.Series(tmp).dtype.type
 
