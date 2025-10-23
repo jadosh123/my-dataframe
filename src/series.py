@@ -1,10 +1,11 @@
-from utils.type_check import safe_type_cast
+from utils.typing import safe_type_cast
 from collections.abc import Mapping
 from numpy.typing import NDArray
 import numpy as np
 from typing import Any, Self
 import pandas as pd
 import operator
+from utils.indexing import _iLocIndexer, _LocIndexer
 
 MAX_DISPLAY_VAL = 60
 
@@ -111,7 +112,7 @@ class Series():
     def __len__(self):
         return len(self.values)
 
-    def __getitem__(self, key) -> Self | Any:
+    def __getitem__(self, key: slice | str | int) -> Self | Any:
         if isinstance(key, slice):
             cls = type(self)
             return cls(self.values[key], self.index[key])
@@ -125,7 +126,16 @@ class Series():
 
         return self.values[ind]
 
+    @property
+    def iloc(self):
+        return _iLocIndexer(self)
+
+    @property
+    def loc(self):
+        return _LocIndexer(self)
+
 
 if __name__ == "__main__":
-    tmp = [1, 2, 3, 4]
-    print(pd.Series(tmp).loc)
+    tmp = [i for i in range(100)]
+    print(type(pd.Series(tmp).loc[[(1), (2)]]))
+    print(Series(tmp).loc[:])

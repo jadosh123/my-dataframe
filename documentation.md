@@ -18,6 +18,7 @@ For the typing hierarchy it seems that pandas uses this setup:
 
 this is why when a pandas series contains a string or a list or any mapping the dtype resolves to object.
 Numpy's ndarray doesn't allow multiple types unless we specify dtype=object on initialization which allows us to store multiple types in it since everything in python is an object.
+
 However when using object as dtype we cant use numpy's vectorized operations.
 
 Now while implementing the dunder repr method in my Series class I thought the padding that pandas added was based on the line with the max length but it seems that it calculates it based on the longest value and longest label regardless of wether they are on the same line or not and adds between them 4 white spaces.
@@ -26,9 +27,10 @@ I first went with the concatenation method inside a loop but its terrible in ter
 
 I found that for a series of length > 60 pandas truncates the data in the repr method and only displays first and last 5 elements with two dots between.
 
-Currently implementing the dunder getitem method, when calling the pandas series object with one index it returns the element in the values array at that index, when calling it with a slice it returns the index value representation like in the dunder repr method for that specific slice.
+Currently implementing the dunder getitem method, when calling the pandas series object with one index it returns the element in the values array at that index, when calling it with a slice it returns a new object of type Series that represents the slice.
 
 Pandas gives a warning for single index lookup that treating keys as positions is deprecated and in the future version, integer keys will always be treated as labels.
+
 This means that for single index lookup we can either iterate over the index array and store the index that matches the requested label and then return the value at that index or we can store a private dictionary using the single leading underscore for O(1) lookup.
 
 Now I'v implemented slicing, indexing by integer and by label, currently adding some unittests to try to cover some cases.
@@ -37,3 +39,5 @@ Next step will probably be implementing .iloc or .loc functionality? I need to l
 After looking into it I see that when we print the object returned by pd.Series().iloc it shows us this: pandas.core.indexing._iLocIndexer
 
 That means we need to implement the _iLocIndexer and the _LocIndexer as seperate classes with their own dunder getitem method and when we implement the property decorator we return a instance of that class with self as the argument.
+
+I'v learned about decorators now is the time to use the @property decorator in order to implement the .iloc and .loc functionality.
