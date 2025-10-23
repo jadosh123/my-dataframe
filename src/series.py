@@ -136,6 +136,8 @@ class Series():
 
 
 if __name__ == "__main__":
-    tmp = [i for i in range(100)]
-    print(type(pd.Series(tmp).loc[[(1), (2)]]))
-    print(Series(tmp).loc[:])
+    tmp = [f"{i}" for i in range(100)]
+    ser = Series(tmp)
+    tmpo = pd.Series()
+    # print(pd.Series(tmp).loc["1":"5"])?
+    print(ser.loc["1": 80])

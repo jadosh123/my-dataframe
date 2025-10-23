@@ -41,3 +41,7 @@ After looking into it I see that when we print the object returned by pd.Series(
 That means we need to implement the _iLocIndexer and the _LocIndexer as seperate classes with their own dunder getitem method and when we implement the property decorator we return a instance of that class with self as the argument.
 
 I'v learned about decorators now is the time to use the @property decorator in order to implement the .iloc and .loc functionality.
+
+I implemented the int only indexer iloc and the label indexer loc which also supports passing a list of labels and returns a new Series object with that data just like pandas.
+
+Now its time to add some unit tests to cover the new stuff we implemented.
