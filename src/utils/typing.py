@@ -2,14 +2,14 @@
 import numpy as np
 from numpy.typing import NDArray, DTypeLike
 from typing import Any
-from collections.abc import Collection
+from collections.abc import Mapping, Sequence
 
 
 class Types:
     INT_TYPES = (int, np.integer)
     FLOAT_TYPES = (float, np.floating)
     BOOL_TYPES = (bool, np.bool_)
-    OBJECT_TYPES = (Collection, str)
+    OBJECT_TYPES = (Mapping, Sequence, str)
 
 
 def type_checker(data: list[Any]) -> DTypeLike:
@@ -39,7 +39,8 @@ def type_checker(data: list[Any]) -> DTypeLike:
     else:
         supported_types = (list(Types.BOOL_TYPES) +
                            list(Types.INT_TYPES) +
-                           list(Types.FLOAT_TYPES))
+                           list(Types.FLOAT_TYPES) +
+                           list(Types.OBJECT_TYPES))
         raise TypeError("Type is not supported, the supported types are:" +
                         ", ".join([t.__name__ for t in supported_types]) +
                         "."

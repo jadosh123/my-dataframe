@@ -1,4 +1,4 @@
-from utils.type_check import type_checker
+from utils.typing import type_checker
 import pandas as pd
 
 

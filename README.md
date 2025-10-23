@@ -1,1 +1,2 @@
 # my-dataframe
+I'v been thinking about this project for a while and only now getting to it, I was doing some python rehearsal and practice to get to more advanced topics and this is my way of putting some stuff I learned to work and practicing.
