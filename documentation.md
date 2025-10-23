@@ -1,7 +1,7 @@
 # Implementing a DataFrame
 
 ## Introduction
-I'v been thinking about this project for a while and only now getting to it, I was doing some python rehearsal and practice to get to more advanced topics and this is my way of putting some stuff I learned to work and practicing, In this documentation I'm going to write out all my thoughts and ideas throughout this project and try as much as I can to share the difficulties and solutions I find, hope you enjoy it!
+In this documentation I'm going to write out all my thoughts and ideas throughout this project and try as much as I can to share the difficulties and solutions I find, hope you enjoy it!
 
 ## Journey
 Numpy's ndarray (N-dimensional array) size can't change after initialization, current idea is to either create a new one with the new length and data or use the resize method by numpy for the ndarray.
