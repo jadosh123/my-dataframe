@@ -22,6 +22,10 @@ def type_checker(data: list[Any]) -> DTypeLike:
     for element in data:
         data_types.add(type(element))
 
+    # If data is empty return object type like pandas
+    if len(data_types) == 0:
+        return np.object_
+
     # Check wether we have any collection or string type
     if any(issubclass(t, Types.OBJECT_TYPES) for t in data_types):
         return np.object_

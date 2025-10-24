@@ -1,7 +1,7 @@
 from utils.typing import safe_type_cast
 from collections.abc import Mapping
-from numpy.typing import NDArray
-import numpy as np
+# from numpy.typing import NDArray
+# import numpy as np
 from typing import Any, Self
 import pandas as pd
 import operator
@@ -17,14 +17,10 @@ class Series():
 
     A series is a One-dimensional ndarray with axis labels.
     """
-    values: NDArray[Any]
-    index: NDArray[Any]
-    dtype: np.dtype[Any]
-    _lbl_dict: Mapping[Any, Any]
-
     def __init__(self, data=None, index=None, dtype=None,
                  name=None, copy=None):
-        if data is None:
+        print(data)
+        if data is None or len(data) == 0:
             keys = []
             values = []
         # If data argument is a Mapping
@@ -45,7 +41,6 @@ class Series():
 
         # Store array and dtype
         self.values = arr
-        self.dtype = arr.dtype
 
         # If index specified
         if index is not None:
@@ -126,6 +121,7 @@ class Series():
 
         return self.values[ind]
 
+    # Dynamic attributes
     @property
     def iloc(self):
         return _iLocIndexer(self)
@@ -134,10 +130,24 @@ class Series():
     def loc(self):
         return _LocIndexer(self)
 
+    @property
+    def size(self):
+        return len(self.values)
+
+    @property
+    def empty(self):
+        return True if len(self.values) == 0 else False
+
+    @property
+    def dtype(self):
+        return self.values.dtype
+
+    @property
+    def dtypes(self):
+        return self.dtype
+
 
 if __name__ == "__main__":
     tmp = [f"{i}" for i in range(100)]
-    ser = Series(tmp)
-    tmpo = pd.Series()
-    # print(pd.Series(tmp).loc["1":"5"])?
-    print(ser.loc["1": 80])
+    test = ['1', 1.0, 1, ['tp']]
+    print(Series(test).dtypes)

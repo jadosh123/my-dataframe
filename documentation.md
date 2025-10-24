@@ -45,3 +45,5 @@ I'v learned about decorators now is the time to use the @property decorator in o
 I implemented the int only indexer iloc and the label indexer loc which also supports passing a list of labels and returns a new Series object with that data just like pandas.
 
 Now its time to add some unit tests to cover the new stuff we implemented.
+
+Moving forward, all the attributes that depend on the series current state will be implemented with the @property decorator to allow them to change along with any changes in the series.
