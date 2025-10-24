@@ -8,6 +8,18 @@ float_arr = [1.0, 2.0, 3.0, 4.0]
 int_dict = {'one': 1, 'two': 2, 'three': 3}
 fl_int_dict = {'one': 1, 'two': 2, 'three': 3.0}
 trunc_arr = [i for i in range(100)]
+nan_val_lbl = [[1, 2, None, 4], ['1', '2', '3', None]]
+
+
+# Testing better design idea for refractoring later
+@pytest.fixture
+def my_nan_srs():
+    return Series(nan_val_lbl[0], nan_val_lbl[1])
+
+
+@pytest.fixture
+def pd_nan_srs():
+    return pd.Series(nan_val_lbl[0], nan_val_lbl[1])
 
 
 class TestSeries:
@@ -75,3 +87,12 @@ class TestSeries:
     def test_loc_err(self):
         with pytest.raises(KeyError):
             Series(int_arr).loc[11]
+
+    def test_nan_output(self, my_nan_srs, pd_nan_srs):
+        assert (str(my_nan_srs) ==
+                str(pd_nan_srs))
+
+    def test_nan_lbl_val_types(self, my_nan_srs: Series,
+                               pd_nan_srs: pd.Series):
+        assert ([my_nan_srs.index.dtype, my_nan_srs.values.dtype] ==
+                [pd_nan_srs.index.dtype, pd_nan_srs.values.dtype])

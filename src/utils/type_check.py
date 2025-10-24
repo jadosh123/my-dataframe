@@ -27,7 +27,7 @@ def type_checker(data: list[Any]) -> DTypeLike:
         return np.object_
 
     # Check wether we have any collection or string type
-    if any(issubclass(t, Types.OBJECT_TYPES) for t in data_types):
+    if any(issubclass(t, Types.OBJECT_TYPES) or t is None for t in data_types):
         return np.object_
     elif any(issubclass(t, Types.FLOAT_TYPES) for t in data_types):
         # If bool and float exist then object is best
@@ -75,6 +75,16 @@ def safe_type_cast(data: list[Any],
     return arr
 
 
+def change_none(data: list[Any]) -> list[Any]:
+    """
+    Changes None (missing) values to np.nan and returns the new list
+    """
+    for index, value in enumerate(data):
+        if value is None:
+            data[index] = np.nan
+    return data
+
+
 if __name__ == "__main__":
     tmp = [4, 2, 5]
-    print(type_checker(tmp))
+    print(type_checker([None]))

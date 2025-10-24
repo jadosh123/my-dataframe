@@ -1,7 +1,6 @@
-from utils.typing import safe_type_cast
+from utils.type_check import safe_type_cast, change_none
 from collections.abc import Mapping
-# from numpy.typing import NDArray
-# import numpy as np
+import numpy as np
 from typing import Any, Self
 import pandas as pd
 import operator
@@ -19,7 +18,6 @@ class Series():
     """
     def __init__(self, data=None, index=None, dtype=None,
                  name=None, copy=None):
-        print(data)
         if data is None or len(data) == 0:
             keys = []
             values = []
@@ -32,7 +30,8 @@ class Series():
             values = list(data)
             keys = [i for i in range(len(values))]
 
-        # Decide type and store ndarray
+        # Convert none to np.nan then coerce values to appropraite type
+        change_none(values)
         arr = safe_type_cast(values, dtype=dtype)
 
         # Copy only if specified
@@ -93,7 +92,7 @@ class Series():
         # Construct the result
         res = [f"{lbl}" +
                (max_length - len(f"{lbl}{val}"))*" " +
-               f"{val}\n"
+               ("NaN\n" if val == 'nan' else f"{val}\n")
                for lbl, val in zip(lbls, vals)]
 
         # Check if to include length for truncated output
@@ -150,4 +149,6 @@ class Series():
 if __name__ == "__main__":
     tmp = [f"{i}" for i in range(100)]
     test = ['1', 1.0, 1, ['tp']]
-    print(Series(test).dtypes)
+    nan_li = [1, None, 3, 5]
+    print(pd.Series(nan_li, index=['1', '2', None, '3']))
+    print(Series(nan_li, index=['1', '2', None, '3']))
