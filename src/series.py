@@ -1,10 +1,12 @@
 from utils.type_check import safe_type_cast, change_none
 from collections.abc import Mapping
-import numpy as np
 from typing import Any, Self
-import pandas as pd
+from numpy.typing import NDArray
 import operator
 from utils.indexing import _iLocIndexer, _LocIndexer
+# # For quick testing
+# import pandas as pd
+# import numpy as np
 
 MAX_DISPLAY_VAL = 60
 
@@ -16,8 +18,12 @@ class Series():
 
     A series is a One-dimensional ndarray with axis labels.
     """
-    def __init__(self, data=None, index=None, dtype=None,
-                 name=None, copy=None):
+    def __init__(self,
+                 data: Mapping | list[Any] | NDArray[Any] | None = None,
+                 index: list[Any] | NDArray[Any] | None = None,
+                 dtype: Any | None = None,
+                 name: str | None = None,
+                 copy: bool | None = None):
         if data is None or len(data) == 0:
             keys = []
             values = []
@@ -147,8 +153,26 @@ class Series():
 
 
 if __name__ == "__main__":
-    tmp = [f"{i}" for i in range(100)]
-    test = ['1', 1.0, 1, ['tp']]
-    nan_li = [1, None, 3, 5]
-    print(pd.Series(nan_li, index=['1', '2', None, '3']))
-    print(Series(nan_li, index=['1', '2', None, '3']))
+    int_arr = [i for i in range(10)]
+    float_arr = [1.0, 2.0, 3.0, 4.0]
+    int_dict = {'one': 1, 'two': 2, 'three': 3}
+    fl_int_dict = {'one': 1, 'two': 2, 'three': 3.0}
+    trunc_arr = [i for i in range(100)]
+    nan_val_lbl = [[1, 2, None, 4], ['1', '2', '3', None]]
+    tmp_li = {'int array': int_arr, 'float array': float_arr,
+              'int dictionary': int_dict, 'float int dictionary': fl_int_dict,
+              'truncated array': trunc_arr,
+              'NaN value and labels array': nan_val_lbl}
+
+    for key, val in tmp_li.items():
+        # Showcase all the inputs and outputs
+        if val == nan_val_lbl:
+            tmp_series = Series(data=val[0], index=val[1])
+            print(f"{key}:\n{tmp_series}\n")
+        else:
+            tmp_series = Series(val)
+            print(f"{key}:\n{tmp_series}\n")
+
+    print(f"Slicing series:\n{Series(trunc_arr)[10:20]}\n")
+    print(f"Accessing by label with loc:\n{Series(int_dict).loc['two']}\n")
+    print(f"Accessing by index with iloc:\n{Series(trunc_arr).iloc[90]}\n")

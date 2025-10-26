@@ -12,7 +12,7 @@ class Types:
     OBJECT_TYPES = (Mapping, Sequence, str)
 
 
-def type_checker(data: list[Any]) -> DTypeLike:
+def type_checker(data: list[Any] | NDArray[Any]) -> DTypeLike:
     """
     A type checking function for the series, it returns the datatype.
     """
@@ -51,7 +51,7 @@ def type_checker(data: list[Any]) -> DTypeLike:
                         )
 
 
-def safe_type_cast(data: list[Any],
+def safe_type_cast(data: list[Any] | NDArray[Any],
                    dtype: DTypeLike | None = None) -> NDArray[Any]:
     """
     Attempts to safely coerce the data inside the provided
