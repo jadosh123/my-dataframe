@@ -6,7 +6,7 @@ import operator
 from utils.indexing import _iLocIndexer, _LocIndexer
 # # For quick testing
 # import pandas as pd
-# import numpy as np
+import numpy as np
 
 MAX_DISPLAY_VAL = 60
 
@@ -125,6 +125,30 @@ class Series():
             ind = operator.index(key)
 
         return self.values[ind]
+    
+    def __add__(self, other: Self | Any) -> Self:
+        # Created master index array for final output
+        master_label = np.union1d(self.index, other.index)
+        
+        # Now we need to find the indices in the orginal series that match the master index
+        master_indices1 = np.searchsorted(master_label, self.index)
+        master_indices2 = np.searchsorted(master_label, other.index)
+
+        # Now we create two identical length ndarrays of NaNs
+        master_values1 = np.array(
+            object=[np.nan for _ in range(len(master_label))]
+        )
+        master_values2 = np.array(
+            object=[np.nan for _ in range(len(master_label))]
+        )
+
+        # And finally fill the values in their respective indices and return a new instance of the class
+        np.put(master_values1, master_indices1, self.values)
+        np.put(master_values2, master_indices2, other.values)
+        master_values = master_values1 + master_values2
+        cls = type(self)
+        return cls(data=master_values, index=master_label)
+
 
     # Dynamic attributes
     @property
@@ -153,26 +177,30 @@ class Series():
 
 
 if __name__ == "__main__":
-    int_arr = [i for i in range(10)]
-    float_arr = [1.0, 2.0, 3.0, 4.0]
-    int_dict = {'one': 1, 'two': 2, 'three': 3}
-    fl_int_dict = {'one': 1, 'two': 2, 'three': 3.0}
-    trunc_arr = [i for i in range(100)]
-    nan_val_lbl = [[1, 2, None, 4], ['1', '2', '3', None]]
-    tmp_li = {'int array': int_arr, 'float array': float_arr,
-              'int dictionary': int_dict, 'float int dictionary': fl_int_dict,
-              'truncated array': trunc_arr,
-              'NaN value and labels array': nan_val_lbl}
 
-    for key, val in tmp_li.items():
-        # Showcase all the inputs and outputs
-        if val == nan_val_lbl:
-            tmp_series = Series(data=val[0], index=val[1])
-            print(f"{key}:\n{tmp_series}\n")
-        else:
-            tmp_series = Series(val)
-            print(f"{key}:\n{tmp_series}\n")
+    # int_arr = [i for i in range(10)]
+    # float_arr = [1.0, 2.0, 3.0, 4.0]
+    int_dict1 = {'one': 1, 'two': 2, 'three': 3}
+    int_dict2 = {'vibes': 4, 'hello': np.nan, 'two': 2}
+    print(Series(int_dict1) + Series(int_dict2))
 
-    print(f"Slicing series:\n{Series(trunc_arr)[10:20]}\n")
-    print(f"Accessing by label with loc:\n{Series(int_dict).loc['two']}\n")
-    print(f"Accessing by index with iloc:\n{Series(trunc_arr).iloc[90]}\n")
+    # fl_int_dict = {'one': 1, 'two': 2, 'three': 3.0}
+    # trunc_arr = [i for i in range(100)]
+    # nan_val_lbl = [[1, 2, None, 4], ['1', '2', '3', None]]
+    # tmp_li = {'int array': int_arr, 'float array': float_arr,
+    #           'int dictionary': int_dict, 'float int dictionary': fl_int_dict,
+    #           'truncated array': trunc_arr,
+    #           'NaN value and labels array': nan_val_lbl}
+
+    # for key, val in tmp_li.items():
+    #     # Showcase all the inputs and outputs
+    #     if val == nan_val_lbl:
+    #         tmp_series = Series(data=val[0], index=val[1])
+    #         print(f"{key}:\n{tmp_series}\n")
+    #     else:
+    #         tmp_series = Series(val)
+    #         print(f"{key}:\n{tmp_series}\n")
+
+    # print(f"Slicing series:\n{Series(trunc_arr)[10:20]}\n")
+    # print(f"Accessing by label with loc:\n{Series(int_dict).loc['two']}\n")
+    # print(f"Accessing by index with iloc:\n{Series(trunc_arr).iloc[90]}\n")
