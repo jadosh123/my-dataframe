@@ -96,3 +96,8 @@ class TestSeries:
                                pd_nan_srs: pd.Series):
         assert ([my_nan_srs.index.dtype, my_nan_srs.values.dtype] ==
                 [pd_nan_srs.index.dtype, pd_nan_srs.values.dtype])
+
+    def test_nan_addition(self, my_nan_srs: Series,
+                          pd_nan_srs: pd.Series):
+        npt.assert_array_equal((my_nan_srs + my_nan_srs).values, (pd_nan_srs + pd_nan_srs).values)
+

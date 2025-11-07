@@ -5,10 +5,11 @@ from numpy.typing import NDArray
 import operator
 from utils.indexing import _iLocIndexer, _LocIndexer
 # # For quick testing
-# import pandas as pd
+import pandas as pd
 import numpy as np
 
 MAX_DISPLAY_VAL = 60
+SENTINEL_NONE = "__INDEX_NONE_SENTINEL__"
 
 
 class Series():
@@ -127,8 +128,12 @@ class Series():
         return self.values[ind]
     
     def __add__(self, other: Self | Any) -> Self:
+        # We need to convert the array to compatible types before addition and sorting with numpy union1d
+        normalized_self_index = self._normalize_index(self.index)
+        normalized_other_index = self._normalize_index(other.index)
+
         # Created master index array for final output
-        master_label = np.union1d(self.index, other.index)
+        master_label = np.union1d(normalized_self_index, normalized_other_index)
         
         # Now we need to find the indices in the orginal series that match the master index
         master_indices1 = np.searchsorted(master_label, self.index)
@@ -146,9 +151,18 @@ class Series():
         np.put(master_values1, master_indices1, self.values)
         np.put(master_values2, master_indices2, other.values)
         master_values = master_values1 + master_values2
+
+        # Revert the sentinel to None
+        master_label[master_label == SENTINEL_NONE] = None
+
         cls = type(self)
         return cls(data=master_values, index=master_label)
 
+    def _normalize_index(self, idx: np.ndarray) -> np.ndarray:
+        """Temporarily replaces None in the index array with a string sentinel"""
+        temp_idx = np.asanyarray(idx, dtype=object)
+        temp_idx[temp_idx == None] = SENTINEL_NONE
+        return temp_idx
 
     # Dynamic attributes
     @property
@@ -177,30 +191,8 @@ class Series():
 
 
 if __name__ == "__main__":
-
-    # int_arr = [i for i in range(10)]
-    # float_arr = [1.0, 2.0, 3.0, 4.0]
-    int_dict1 = {'one': 1, 'two': 2, 'three': 3}
-    int_dict2 = {'vibes': 4, 'hello': np.nan, 'two': 2}
-    print(Series(int_dict1) + Series(int_dict2))
-
-    # fl_int_dict = {'one': 1, 'two': 2, 'three': 3.0}
-    # trunc_arr = [i for i in range(100)]
-    # nan_val_lbl = [[1, 2, None, 4], ['1', '2', '3', None]]
-    # tmp_li = {'int array': int_arr, 'float array': float_arr,
-    #           'int dictionary': int_dict, 'float int dictionary': fl_int_dict,
-    #           'truncated array': trunc_arr,
-    #           'NaN value and labels array': nan_val_lbl}
-
-    # for key, val in tmp_li.items():
-    #     # Showcase all the inputs and outputs
-    #     if val == nan_val_lbl:
-    #         tmp_series = Series(data=val[0], index=val[1])
-    #         print(f"{key}:\n{tmp_series}\n")
-    #     else:
-    #         tmp_series = Series(val)
-    #         print(f"{key}:\n{tmp_series}\n")
-
-    # print(f"Slicing series:\n{Series(trunc_arr)[10:20]}\n")
-    # print(f"Accessing by label with loc:\n{Series(int_dict).loc['two']}\n")
-    # print(f"Accessing by index with iloc:\n{Series(trunc_arr).iloc[90]}\n")
+    nan_val_lbl = [[1, 2, None, 4], ['1', '2', '3', None]]
+    test = pd.Series(data=nan_val_lbl[0], index=nan_val_lbl[1])
+    test1 = Series(data=nan_val_lbl[0], index=nan_val_lbl[1])
+    print(test + test)
+    print(test1 + test1)
