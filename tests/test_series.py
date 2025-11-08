@@ -101,3 +101,13 @@ class TestSeries:
                           pd_nan_srs: pd.Series):
         npt.assert_array_equal((my_nan_srs + my_nan_srs).values, (pd_nan_srs + pd_nan_srs).values)
 
+    def test_nan_addition_labels(self, my_nan_srs: Series,
+                                 pd_nan_srs: pd.Series):
+        npt.assert_array_equal((my_nan_srs + my_nan_srs).index, (pd_nan_srs + pd_nan_srs).index)
+
+
+
+
+
+
+
