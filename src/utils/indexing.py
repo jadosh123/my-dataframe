@@ -55,6 +55,7 @@ class _LocIndexer:
                 except (ValueError, TypeError):
                     pass
 
+            # If not found raise KeyError like pandas loc
             if start_pos is None and key.start is not None:
                 raise KeyError(f"Label '{key.start}' was not found")
             if stop_pos is None and key.stop is not None:

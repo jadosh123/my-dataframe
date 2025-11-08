@@ -12,7 +12,7 @@ class Types:
     OBJECT_TYPES = (Mapping, Sequence, str)
 
 
-def type_checker(data: list[Any]) -> DTypeLike:
+def type_checker(data: list[Any] | NDArray[Any]) -> DTypeLike:
     """
     A type checking function for the series, it returns the datatype.
     """
@@ -22,8 +22,12 @@ def type_checker(data: list[Any]) -> DTypeLike:
     for element in data:
         data_types.add(type(element))
 
+    # If data is empty return object type like pandas
+    if len(data_types) == 0:
+        return np.object_
+
     # Check wether we have any collection or string type
-    if any(issubclass(t, Types.OBJECT_TYPES) for t in data_types):
+    if any(issubclass(t, Types.OBJECT_TYPES) or t is None for t in data_types):
         return np.object_
     elif any(issubclass(t, Types.FLOAT_TYPES) for t in data_types):
         # If bool and float exist then object is best
@@ -47,7 +51,7 @@ def type_checker(data: list[Any]) -> DTypeLike:
                         )
 
 
-def safe_type_cast(data: list[Any],
+def safe_type_cast(data: list[Any] | NDArray[Any],
                    dtype: DTypeLike | None = None) -> NDArray[Any]:
     """
     Attempts to safely coerce the data inside the provided
@@ -71,6 +75,16 @@ def safe_type_cast(data: list[Any],
     return arr
 
 
+def change_none(data: list[Any]) -> list[Any]:
+    """
+    Changes None (missing) values to np.nan and returns the new list
+    """
+    for index, value in enumerate(data):
+        if value is None:
+            data[index] = np.nan
+    return data
+
+
 if __name__ == "__main__":
     tmp = [4, 2, 5]
-    print(type_checker(tmp))
+    print(type_checker([None]))
