@@ -189,6 +189,68 @@ class Series():
         cls = type(self)
         return cls(data=master_values, index=master_label)
 
+    def __mul__(self, other: Self | Any) -> Self:
+         # We need to convert the array to compatible types before addition and sorting with numpy union1d
+        normalized_self_index = self._normalize_index(self.index)
+        normalized_other_index = self._normalize_index(other.index)
+
+        # Created master index array for final output
+        master_label = np.union1d(normalized_self_index, normalized_other_index)
+        
+        # Now we need to find the indices in the orginal series that match the master index
+        master_indices1 = np.searchsorted(master_label, self.index)
+        master_indices2 = np.searchsorted(master_label, other.index)
+
+        # Now we create two identical length ndarrays of NaNs
+        master_values1 = np.array(
+            object=[np.nan for _ in range(len(master_label))]
+        )
+        master_values2 = np.array(
+            object=[np.nan for _ in range(len(master_label))]
+        )
+
+        # And finally fill the values in their respective indices and return a new instance of the class
+        np.put(master_values1, master_indices1, self.values)
+        np.put(master_values2, master_indices2, other.values)
+        master_values = master_values1 * master_values2
+
+        # Revert the sentinel to None
+        master_label[master_label == SENTINEL_NONE] = None
+
+        cls = type(self)
+        return cls(data=master_values, index=master_label)
+
+    def __truediv__(self, other: Self | Any) -> Self:
+         # We need to convert the array to compatible types before addition and sorting with numpy union1d
+        normalized_self_index = self._normalize_index(self.index)
+        normalized_other_index = self._normalize_index(other.index)
+
+        # Created master index array for final output
+        master_label = np.union1d(normalized_self_index, normalized_other_index)
+        
+        # Now we need to find the indices in the orginal series that match the master index
+        master_indices1 = np.searchsorted(master_label, self.index)
+        master_indices2 = np.searchsorted(master_label, other.index)
+
+        # Now we create two identical length ndarrays of NaNs
+        master_values1 = np.array(
+            object=[np.nan for _ in range(len(master_label))]
+        )
+        master_values2 = np.array(
+            object=[np.nan for _ in range(len(master_label))]
+        )
+
+        # And finally fill the values in their respective indices and return a new instance of the class
+        np.put(master_values1, master_indices1, self.values)
+        np.put(master_values2, master_indices2, other.values)
+        master_values = master_values1 / master_values2
+
+        # Revert the sentinel to None
+        master_label[master_label == SENTINEL_NONE] = None
+
+        cls = type(self)
+        return cls(data=master_values, index=master_label)
+
     def _normalize_index(self, idx: np.ndarray) -> np.ndarray:
         """Temporarily replaces None in the index array with a string sentinel"""
         temp_idx = np.asanyarray(idx, dtype=object)
@@ -225,5 +287,5 @@ if __name__ == "__main__":
     nan_val_lbl = [[1, 2, None, 4], ['1', '2', '3', None]]
     test = pd.Series(data=nan_val_lbl[0], index=nan_val_lbl[1])
     test1 = Series(data=nan_val_lbl[0], index=nan_val_lbl[1])
-    print(test - test)
-    print(test1 - test1)
+    print(test / test)
+    print(test1 / test1)
