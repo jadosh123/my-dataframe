@@ -1,5 +1,6 @@
-from utils.type_check import type_checker
 import pandas as pd
+
+from src.my_dataframe.utils.type_check import type_checker
 
 
 class TestClass:
@@ -16,7 +17,7 @@ class TestClass:
         assert type_checker(tmp) == pd.Series(tmp).dtype.type
 
     def test_type_object(self):
-        tmp = ['hello', 2, [1], 4.5, {"hi": 4}]
+        tmp = ["hello", 2, [1], 4.5, {"hi": 4}]
         assert type_checker(tmp) == pd.Series(tmp).dtype.type
 
     def test_type_float_bool(self):

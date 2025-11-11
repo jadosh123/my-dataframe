@@ -1,30 +1,35 @@
-from utils.type_check import safe_type_cast, change_none
+import operator
 from collections.abc import Mapping
 from typing import Any, Self
-from numpy.typing import NDArray
-import operator
-from utils.indexing import _iLocIndexer, _LocIndexer
+
+import numpy as np
+
 # # For quick testing
 import pandas as pd
-import numpy as np
+from numpy.typing import NDArray
+
+from src.my_dataframe.utils.indexing import _iLocIndexer, _LocIndexer
+from src.my_dataframe.utils.type_check import change_none, safe_type_cast
 
 MAX_DISPLAY_VAL = 60
 SENTINEL_NONE = "__INDEX_NONE_SENTINEL__"
 
 
-class Series():
-    """
-    A series class that is meant to mimic the pandas series
+class Series:
+    """A series class that is meant to mimic the pandas series
     and act as the building block of the final dataframe.
 
     A series is a One-dimensional ndarray with axis labels.
     """
-    def __init__(self,
-                 data: Mapping | list[Any] | NDArray[Any] | None = None,
-                 index: list[Any] | NDArray[Any] | None = None,
-                 dtype: Any | None = None,
-                 name: str | None = None,
-                 copy: bool | None = None):
+
+    def __init__(
+        self,
+        data: Mapping | list[Any] | NDArray[Any] | None = None,
+        index: list[Any] | NDArray[Any] | None = None,
+        dtype: Any | None = None,
+        name: str | None = None,
+        copy: bool | None = None,
+    ):
         if data is None or len(data) == 0:
             keys = []
             values = []
@@ -52,9 +57,7 @@ class Series():
         if index is not None:
             # We need to make sure the lengths match
             if len(index) != len(keys):
-                raise ValueError(
-                    "Length of index does not match length of data"
-                    )
+                raise ValueError("Length of index does not match length of data")
             self.index = safe_type_cast(index)
         elif keys is not None:
             self.index = safe_type_cast(keys)
@@ -64,11 +67,7 @@ class Series():
             self.index = safe_type_cast(indices)
 
         # Store indices with labels in a dictionary for O(1) access
-        self._lbl_dict = {lbl: i for lbl, i in zip(
-            self.index, range(len(self.index))
-        )}
-
-        return
+        self._lbl_dict = {lbl: i for lbl, i in zip(self.index, range(len(self.index)))}
 
     def __repr__(self):
         # Determine the longest label and value to print to calculate padding
@@ -81,13 +80,17 @@ class Series():
             vals = [str(val) for val in self.values]
         else:
             # Grab first and last 5 elements from labels and values
-            lbls = [*[str(lbl) for lbl in self.index[:5]],
-                    "  ",
-                    *[str(lbl) for lbl in self.index[-5:]]]
+            lbls = [
+                *[str(lbl) for lbl in self.index[:5]],
+                "  ",
+                *[str(lbl) for lbl in self.index[-5:]],
+            ]
 
-            vals = [*[str(val) for val in self.values[:5]],
-                    "...",
-                    *[str(val) for val in self.values[-5:]]]
+            vals = [
+                *[str(val) for val in self.values[:5]],
+                "...",
+                *[str(val) for val in self.values[-5:]],
+            ]
 
         # Calculate the longest values for padding
         max_lbl_len = max(len(lbl) for lbl in lbls)
@@ -97,10 +100,12 @@ class Series():
         max_length = max_lbl_len + max_val_len + 4
 
         # Construct the result
-        res = [f"{lbl}" +
-               (max_length - len(f"{lbl}{val}"))*" " +
-               ("NaN\n" if val == 'nan' else f"{val}\n")
-               for lbl, val in zip(lbls, vals)]
+        res = [
+            f"{lbl}"
+            + (max_length - len(f"{lbl}{val}")) * " "
+            + ("NaN\n" if val == "nan" else f"{val}\n")
+            for lbl, val in zip(lbls, vals)
+        ]
 
         # Check if to include length for truncated output
         if len(self.index) <= MAX_DISPLAY_VAL:
@@ -117,7 +122,7 @@ class Series():
         if isinstance(key, slice):
             cls = type(self)
             return cls(self.values[key], self.index[key])
-        elif isinstance(key, str):
+        if isinstance(key, str):
             # Here we need to get the index of the label and
             # fetch the value at that index
             ind = self._lbl_dict.get(key)
@@ -126,7 +131,7 @@ class Series():
             ind = operator.index(key)
 
         return self.values[ind]
-    
+
     def __add__(self, other: Self | Any) -> Self:
         # We need to convert the array to compatible types before addition and sorting with numpy union1d
         normalized_self_index = self._normalize_index(self.index)
@@ -134,18 +139,14 @@ class Series():
 
         # Created master index array for final output
         master_label = np.union1d(normalized_self_index, normalized_other_index)
-        
+
         # Now we need to find the indices in the orginal series that match the master index
         master_indices1 = np.searchsorted(master_label, self.index)
         master_indices2 = np.searchsorted(master_label, other.index)
 
         # Now we create two identical length ndarrays of NaNs
-        master_values1 = np.array(
-            object=[np.nan for _ in range(len(master_label))]
-        )
-        master_values2 = np.array(
-            object=[np.nan for _ in range(len(master_label))]
-        )
+        master_values1 = np.array(object=[np.nan for _ in range(len(master_label))])
+        master_values2 = np.array(object=[np.nan for _ in range(len(master_label))])
 
         # And finally fill the values in their respective indices and return a new instance of the class
         np.put(master_values1, master_indices1, self.values)
@@ -159,24 +160,20 @@ class Series():
         return cls(data=master_values, index=master_label)
 
     def __sub__(self, other: Self | Any) -> Self:
-         # We need to convert the array to compatible types before addition and sorting with numpy union1d
+        # We need to convert the array to compatible types before addition and sorting with numpy union1d
         normalized_self_index = self._normalize_index(self.index)
         normalized_other_index = self._normalize_index(other.index)
 
         # Created master index array for final output
         master_label = np.union1d(normalized_self_index, normalized_other_index)
-        
+
         # Now we need to find the indices in the orginal series that match the master index
         master_indices1 = np.searchsorted(master_label, self.index)
         master_indices2 = np.searchsorted(master_label, other.index)
 
         # Now we create two identical length ndarrays of NaNs
-        master_values1 = np.array(
-            object=[np.nan for _ in range(len(master_label))]
-        )
-        master_values2 = np.array(
-            object=[np.nan for _ in range(len(master_label))]
-        )
+        master_values1 = np.array(object=[np.nan for _ in range(len(master_label))])
+        master_values2 = np.array(object=[np.nan for _ in range(len(master_label))])
 
         # And finally fill the values in their respective indices and return a new instance of the class
         np.put(master_values1, master_indices1, self.values)
@@ -190,24 +187,20 @@ class Series():
         return cls(data=master_values, index=master_label)
 
     def __mul__(self, other: Self | Any) -> Self:
-         # We need to convert the array to compatible types before addition and sorting with numpy union1d
+        # We need to convert the array to compatible types before addition and sorting with numpy union1d
         normalized_self_index = self._normalize_index(self.index)
         normalized_other_index = self._normalize_index(other.index)
 
         # Created master index array for final output
         master_label = np.union1d(normalized_self_index, normalized_other_index)
-        
+
         # Now we need to find the indices in the orginal series that match the master index
         master_indices1 = np.searchsorted(master_label, self.index)
         master_indices2 = np.searchsorted(master_label, other.index)
 
         # Now we create two identical length ndarrays of NaNs
-        master_values1 = np.array(
-            object=[np.nan for _ in range(len(master_label))]
-        )
-        master_values2 = np.array(
-            object=[np.nan for _ in range(len(master_label))]
-        )
+        master_values1 = np.array(object=[np.nan for _ in range(len(master_label))])
+        master_values2 = np.array(object=[np.nan for _ in range(len(master_label))])
 
         # And finally fill the values in their respective indices and return a new instance of the class
         np.put(master_values1, master_indices1, self.values)
@@ -221,24 +214,20 @@ class Series():
         return cls(data=master_values, index=master_label)
 
     def __truediv__(self, other: Self | Any) -> Self:
-         # We need to convert the array to compatible types before addition and sorting with numpy union1d
+        # We need to convert the array to compatible types before addition and sorting with numpy union1d
         normalized_self_index = self._normalize_index(self.index)
         normalized_other_index = self._normalize_index(other.index)
 
         # Created master index array for final output
         master_label = np.union1d(normalized_self_index, normalized_other_index)
-        
+
         # Now we need to find the indices in the orginal series that match the master index
         master_indices1 = np.searchsorted(master_label, self.index)
         master_indices2 = np.searchsorted(master_label, other.index)
 
         # Now we create two identical length ndarrays of NaNs
-        master_values1 = np.array(
-            object=[np.nan for _ in range(len(master_label))]
-        )
-        master_values2 = np.array(
-            object=[np.nan for _ in range(len(master_label))]
-        )
+        master_values1 = np.array(object=[np.nan for _ in range(len(master_label))])
+        master_values2 = np.array(object=[np.nan for _ in range(len(master_label))])
 
         # And finally fill the values in their respective indices and return a new instance of the class
         np.put(master_values1, master_indices1, self.values)
@@ -254,7 +243,7 @@ class Series():
     def _normalize_index(self, idx: np.ndarray) -> np.ndarray:
         """Temporarily replaces None in the index array with a string sentinel"""
         temp_idx = np.asanyarray(idx, dtype=object)
-        temp_idx[temp_idx == None] = SENTINEL_NONE
+        temp_idx[temp_idx is None] = SENTINEL_NONE
         return temp_idx
 
     # Dynamic attributes
@@ -284,7 +273,7 @@ class Series():
 
 
 if __name__ == "__main__":
-    nan_val_lbl = [[1, 2, None, 4], ['1', '2', '3', None]]
+    nan_val_lbl = [[1, 2, None, 4], ["1", "2", "3", None]]
     test = pd.Series(data=nan_val_lbl[0], index=nan_val_lbl[1])
     test1 = Series(data=nan_val_lbl[0], index=nan_val_lbl[1])
     print(test / test)

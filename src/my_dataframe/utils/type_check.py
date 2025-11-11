@@ -1,8 +1,9 @@
 # import pandas as pd
-import numpy as np
-from numpy.typing import NDArray, DTypeLike
-from typing import Any
 from collections.abc import Mapping, Sequence
+from typing import Any
+
+import numpy as np
+from numpy.typing import DTypeLike, NDArray
 
 
 class Types:
@@ -13,9 +14,7 @@ class Types:
 
 
 def type_checker(data: list[Any] | NDArray[Any]) -> DTypeLike:
-    """
-    A type checking function for the series, it returns the datatype.
-    """
+    """A type checking function for the series, it returns the datatype."""
     # Most general type as placeholder until we determine the type
     data_types = set()
 
@@ -29,32 +28,33 @@ def type_checker(data: list[Any] | NDArray[Any]) -> DTypeLike:
     # Check wether we have any collection or string type
     if any(issubclass(t, Types.OBJECT_TYPES) or t is None for t in data_types):
         return np.object_
-    elif any(issubclass(t, Types.FLOAT_TYPES) for t in data_types):
+    if any(issubclass(t, Types.FLOAT_TYPES) for t in data_types):
         # If bool and float exist then object is best
         if any(issubclass(t, Types.BOOL_TYPES) for t in data_types):
             return np.object_
-        else:
-            return np.float64
-    elif any(issubclass(t, Types.BOOL_TYPES) for t in data_types):
+        return np.float64
+    if any(issubclass(t, Types.BOOL_TYPES) for t in data_types):
         return np.bool_
-    elif any(issubclass(t, Types.INT_TYPES)
-             for t in data_types):
+    if any(issubclass(t, Types.INT_TYPES) for t in data_types):
         return np.int64
-    else:
-        supported_types = (list(Types.BOOL_TYPES) +
-                           list(Types.INT_TYPES) +
-                           list(Types.FLOAT_TYPES) +
-                           list(Types.OBJECT_TYPES))
-        raise TypeError("Type is not supported, the supported types are:" +
-                        ", ".join([t.__name__ for t in supported_types]) +
-                        "."
-                        )
+    supported_types = (
+        list(Types.BOOL_TYPES)
+        + list(Types.INT_TYPES)
+        + list(Types.FLOAT_TYPES)
+        + list(Types.OBJECT_TYPES)
+    )
+    raise TypeError(
+        "Type is not supported, the supported types are:"
+        + ", ".join([t.__name__ for t in supported_types])
+        + ".",
+    )
 
 
-def safe_type_cast(data: list[Any] | NDArray[Any],
-                   dtype: DTypeLike | None = None) -> NDArray[Any]:
-    """
-    Attempts to safely coerce the data inside the provided
+def safe_type_cast(
+    data: list[Any] | NDArray[Any],
+    dtype: DTypeLike | None = None,
+) -> NDArray[Any]:
+    """Attempts to safely coerce the data inside the provided
     series to the specified type, in case of failure it defaults
     to most generic type `numpy.object_`.
 
@@ -76,9 +76,7 @@ def safe_type_cast(data: list[Any] | NDArray[Any],
 
 
 def change_none(data: list[Any]) -> list[Any]:
-    """
-    Changes None (missing) values to np.nan and returns the new list
-    """
+    """Changes None (missing) values to np.nan and returns the new list"""
     for index, value in enumerate(data):
         if value is None:
             data[index] = np.nan

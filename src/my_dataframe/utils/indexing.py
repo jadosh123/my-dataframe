@@ -1,13 +1,13 @@
-from typing import Any, Self
 import operator
+from typing import Any, Self
 
 
 class _iLocIndexer:
-    """
-    Purely integer-location based indexing for selection by position.
+    """Purely integer-location based indexing for selection by position.
 
     You can access specific values by their index or create a slice.
     """
+
     def __init__(self, parent_series):
         self._obj = parent_series
 
@@ -16,15 +16,13 @@ class _iLocIndexer:
             cls = type(self._obj)
             return cls(self._obj.values[key], self._obj.index[key])
         # If not slice return the specific value
-        else:
-            ind = operator.index(key)
+        ind = operator.index(key)
 
         return self._obj.values[ind]
 
 
 class _LocIndexer:
-    """
-    Access a group of rows and columns by label(s).
+    """Access a group of rows and columns by label(s).
 
     You can access specific values by their label(s) or return a slice.
 
@@ -33,6 +31,7 @@ class _LocIndexer:
     KeyError\n
         If at least one key was request but none was found.
     """
+
     def __init__(self, parent_series):
         self._obj = parent_series
 
@@ -66,7 +65,7 @@ class _LocIndexer:
             int_slice = slice(start_pos, stop_pos, key.step)
             return cls(self._obj.values[int_slice], self._obj.index[int_slice])
         # If list of labels return a new series containing all the data
-        elif isinstance(key, list):
+        if isinstance(key, list):
             vals = []
             lbls = key
             for lbl in key:
@@ -80,7 +79,5 @@ class _LocIndexer:
         # If key is a single label or int
         ind = self._obj._lbl_dict.get(key)
         if ind is None:
-            raise KeyError(
-                f"The label you tried to access does not exist: {key}"
-                )
+            raise KeyError(f"The label you tried to access does not exist: {key}")
         return self._obj.values[ind]
