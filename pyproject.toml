@@ -1,5 +1,5 @@
 [project]
-name = "my-dataframe"
+name = "my_dataframe"
 version = "0.1.0"
 
 [build-system]

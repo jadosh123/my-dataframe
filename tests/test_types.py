@@ -1,6 +1,6 @@
 import pandas as pd
 
-from src.my_dataframe.utils.type_check import type_checker
+from my_dataframe.utils.type_check import type_checker
 
 
 class TestClass:

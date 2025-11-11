@@ -1,5 +1,5 @@
 import operator
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import Any, Self
 
 import numpy as np
@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 
-from src.my_dataframe.utils.indexing import _iLocIndexer, _LocIndexer
-from src.my_dataframe.utils.type_check import change_none, safe_type_cast
+from my_dataframe.utils.indexing import _iLocIndexer, _LocIndexer
+from my_dataframe.utils.type_check import change_none, safe_type_cast
 
 MAX_DISPLAY_VAL = 60
 SENTINEL_NONE = "__INDEX_NONE_SENTINEL__"
@@ -132,7 +132,9 @@ class Series:
 
         return self.values[ind]
 
-    def __add__(self, other: Self | Any) -> Self:
+    def _arith_op(
+        self, other: Self, op: Callable[[np.ndarray, np.ndarray], np.ndarray]
+    ) -> Self:
         # We need to convert the array to compatible types before addition and sorting with numpy union1d
         normalized_self_index = self._normalize_index(self.index)
         normalized_other_index = self._normalize_index(other.index)
@@ -151,99 +153,30 @@ class Series:
         # And finally fill the values in their respective indices and return a new instance of the class
         np.put(master_values1, master_indices1, self.values)
         np.put(master_values2, master_indices2, other.values)
-        master_values = master_values1 + master_values2
+        master_values = op(master_values1, master_values2)
 
         # Revert the sentinel to None
         master_label[master_label == SENTINEL_NONE] = None
 
         cls = type(self)
         return cls(data=master_values, index=master_label)
+
+    def __add__(self, other: Self | Any) -> Self:
+        return self._arith_op(other, operator.add)
 
     def __sub__(self, other: Self | Any) -> Self:
-        # We need to convert the array to compatible types before addition and sorting with numpy union1d
-        normalized_self_index = self._normalize_index(self.index)
-        normalized_other_index = self._normalize_index(other.index)
-
-        # Created master index array for final output
-        master_label = np.union1d(normalized_self_index, normalized_other_index)
-
-        # Now we need to find the indices in the orginal series that match the master index
-        master_indices1 = np.searchsorted(master_label, self.index)
-        master_indices2 = np.searchsorted(master_label, other.index)
-
-        # Now we create two identical length ndarrays of NaNs
-        master_values1 = np.array(object=[np.nan for _ in range(len(master_label))])
-        master_values2 = np.array(object=[np.nan for _ in range(len(master_label))])
-
-        # And finally fill the values in their respective indices and return a new instance of the class
-        np.put(master_values1, master_indices1, self.values)
-        np.put(master_values2, master_indices2, other.values)
-        master_values = master_values1 - master_values2
-
-        # Revert the sentinel to None
-        master_label[master_label == SENTINEL_NONE] = None
-
-        cls = type(self)
-        return cls(data=master_values, index=master_label)
+        return self._arith_op(other, operator.sub)
 
     def __mul__(self, other: Self | Any) -> Self:
-        # We need to convert the array to compatible types before addition and sorting with numpy union1d
-        normalized_self_index = self._normalize_index(self.index)
-        normalized_other_index = self._normalize_index(other.index)
-
-        # Created master index array for final output
-        master_label = np.union1d(normalized_self_index, normalized_other_index)
-
-        # Now we need to find the indices in the orginal series that match the master index
-        master_indices1 = np.searchsorted(master_label, self.index)
-        master_indices2 = np.searchsorted(master_label, other.index)
-
-        # Now we create two identical length ndarrays of NaNs
-        master_values1 = np.array(object=[np.nan for _ in range(len(master_label))])
-        master_values2 = np.array(object=[np.nan for _ in range(len(master_label))])
-
-        # And finally fill the values in their respective indices and return a new instance of the class
-        np.put(master_values1, master_indices1, self.values)
-        np.put(master_values2, master_indices2, other.values)
-        master_values = master_values1 * master_values2
-
-        # Revert the sentinel to None
-        master_label[master_label == SENTINEL_NONE] = None
-
-        cls = type(self)
-        return cls(data=master_values, index=master_label)
+        return self._arith_op(other, operator.mul)
 
     def __truediv__(self, other: Self | Any) -> Self:
-        # We need to convert the array to compatible types before addition and sorting with numpy union1d
-        normalized_self_index = self._normalize_index(self.index)
-        normalized_other_index = self._normalize_index(other.index)
-
-        # Created master index array for final output
-        master_label = np.union1d(normalized_self_index, normalized_other_index)
-
-        # Now we need to find the indices in the orginal series that match the master index
-        master_indices1 = np.searchsorted(master_label, self.index)
-        master_indices2 = np.searchsorted(master_label, other.index)
-
-        # Now we create two identical length ndarrays of NaNs
-        master_values1 = np.array(object=[np.nan for _ in range(len(master_label))])
-        master_values2 = np.array(object=[np.nan for _ in range(len(master_label))])
-
-        # And finally fill the values in their respective indices and return a new instance of the class
-        np.put(master_values1, master_indices1, self.values)
-        np.put(master_values2, master_indices2, other.values)
-        master_values = master_values1 / master_values2
-
-        # Revert the sentinel to None
-        master_label[master_label == SENTINEL_NONE] = None
-
-        cls = type(self)
-        return cls(data=master_values, index=master_label)
+        return self._arith_op(other, operator.truediv)
 
     def _normalize_index(self, idx: np.ndarray) -> np.ndarray:
         """Temporarily replaces None in the index array with a string sentinel"""
         temp_idx = np.asanyarray(idx, dtype=object)
-        temp_idx[temp_idx is None] = SENTINEL_NONE
+        temp_idx[temp_idx == None] = SENTINEL_NONE
         return temp_idx
 
     # Dynamic attributes

@@ -2,7 +2,7 @@ import numpy.testing as npt
 import pandas as pd
 import pytest
 
-from src.my_dataframe.series import Series
+from my_dataframe.series import Series
 
 int_arr = [i for i in range(10)]
 float_arr = [1.0, 2.0, 3.0, 4.0]
